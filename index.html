@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Advanced URL Extractor & ZIP Downloader</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="toggle-container">
+        <label class="switch">
+            <input type="checkbox" id="darkModeToggle" onclick="toggleDarkMode()">
+            <span class="slider round"></span>
+        </label>
+        <p class="mode-text">Light Mode</p>
+    </div>
+    <div class="container" id="container">
+        <h1 style="margin-top: 30px;">URL Extractor & ZIP Downloader 🐧</h1>
+        <textarea id="inputText" rows="5" cols="50" style="min-height: 200px;" placeholder="Enter your text here..."></textarea>
+        <button onclick="extractUrls()">Extract URLs</button>
+        <p style="margin-top: 20px;">Extracted URLs:</p>
+        <ul id="urlList"></ul>
+        <button id="downloadZipBtn" style="display: none;" onclick="downloadZip()">Download ZIP</button>
+        <a id="downloadLink" style="display: none;"></a>
+        <div class="github-button">
+            <a href="https://github.com/sankeer28/URL-Extractor-and-Downloader" target="_blank"><button>View on GitHub</button></a>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
+    <script>
+        function toggleDarkMode() {
+            var container = document.getElementById("container");
+            container.classList.toggle("dark-mode");
+            var modeText = document.querySelector(".mode-text");
+            var body = document.body;
+            if (container.classList.contains("dark-mode")) {
+                modeText.textContent = "Dark Mode";
+                body.classList.add("dark-mode-body");
+            } else {
+                modeText.textContent = "Light Mode";
+                body.classList.remove("dark-mode-body");
+            }
+        }
+
+        function extractUrls() {
+            const inputText = document.getElementById("inputText").value;
+            const urlRegex = /(https?:\/\/|www\.)\S+\.(pdf|jpeg|jpg|png|svg|gif|docx|xlsx|pptx|html|css|js)/gi;
+        
+            const urls = inputText.match(urlRegex);
+            const urlList = document.getElementById("urlList");
+        
+            if (urls) {
+                urlList.innerHTML = "";
+        
+                urls.forEach((url, index) => {
+                    const listItem = document.createElement("li");
+                    const link = document.createElement("a");
+                    link.href = url;
+                    link.textContent = url;
+                    link.target = "_blank"; 
+                    listItem.appendChild(link);
+                    urlList.appendChild(listItem);
+                });
+        
+                document.getElementById("downloadZipBtn").style.display = "block";
+            } else {
+                urlList.innerHTML = "<li>No URLs found.</li>";
+                document.getElementById("downloadZipBtn").style.display = "none";
+            }
+        }
+        
+
+        function downloadZip() {
+            const inputText = document.getElementById("inputText").value;
+            const urlRegex = /(https?:\/\/|www\.)\S+\.(pdf|jpeg|jpg|png|svg|gif|docx|xlsx|pptx|html|css|js)/gi;
+
+            const urls = inputText.match(urlRegex);
+
+            if (urls) {
+                const zip = new JSZip();
+                const promises = [];
+
+                urls.forEach((url, index) => {
+                    const extension = url.split(".").pop();
+                    const filename = `file${index + 1}.${extension}`;
+                    const promise = fetch(url)
+                        .then(response => response.blob())
+                        .then(blob => zip.file(filename, blob));
+                    promises.push(promise);
+                });
+
+                Promise.all(promises).then(() => {
+                    zip.generateAsync({ type: "blob" }).then(blob => {
+                        saveAs(blob, "ExtractedFiles.zip");
+                        document.getElementById("downloadLink").style.display = "block";
+                        document.getElementById("downloadLink").textContent = "Downloaded ✅";
+                    });
+                });
+            }
+        }
+    </script>
+</body>
+</html>
