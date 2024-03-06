@@ -1,4 +1,4 @@
-# Advanced URL Extractor & ZIP Downloader
+# URL Extractor & ZIP Downloader
 
 This web application allows you to extract URLs from text and download them as a ZIP file. Currently, it supports downloading images from URLs.
 
